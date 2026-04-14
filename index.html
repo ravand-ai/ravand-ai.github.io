@@ -1,93 +1,187 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-    <meta charset="utf-8">
-    <meta name=viewport content="width=device-width, initial-scale=1">
-    <!--[if lt IE 9]><script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Shutdown</title>
     <style>
-        body { margin: 0; padding: 0; }
-        html { height: 100%; cursor: default; }
-        body {
-            font-family: "Roboto", sans-serif; /* Default font */
-            width: 100%; height: 100%;
+        :root {
+            --bg-color: #0a0a0a;
+            --text-color: #e0e0e0;
+            --accent-color: #ff2b2b;
+            --secondary-text: #888888;
+        }
+
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow: hidden;
+            /* Prevents scrollbars */
+        }
+
+        /* Background animation to simulate signal loss/static */
+        .noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.05;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        .container {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 20px;
             text-align: center;
-            display: table;
-            opacity: 1;
-            animation: fadein 3s forwards;
-        }
-        h2 {
-            font-weight: 300;
-            margin-bottom: 25px;
-        }
-        img {
-            width: 25%; /* Image width */
-            border: 0; /* For IE */
-            /* Aspect ratio of image, gives initial dimension to prevent text moving down once image is loaded */
-            /* When changing logo, change this also */
-            aspect-ratio: 125 / 50;
-        }
-        #main {
-            vertical-align: middle;
-            display: table-cell;
-        }
-        /* Progress bar */
-        #progress {
-            width: 45%; /* Bar width */
-            margin: 0 auto;
-            border-radius: 10px; /* Roundness */
-            background-color: #a8a8a8; /* Background colour */
-            padding: 7px 5px;
-            /* border: 5px solid #a8a8a8; Border */
-        }
-        #fill {
-            padding: 2px 0;
-            background-color: #00b98b; /* Fill colour */
-            width: 35%; /* Bar percentage, change text below also */
-            border-radius: 25px; /* Roundness */
-            animation: proanimate 2s;
-        }
-        #barpercent h3 {
-            color: white; /* Bar percentage text colour */
-            margin: 0; padding: 0;
-            opacity: 1;
-            animation: fadein 3s forwards;
+            animation: fadeIn 2s ease-in-out;
         }
 
-        /* Fades in animation */
-        @keyframes fadein  {
-            from { opacity: 0; }
-        }
-        /* Animates bar on page load */
-        @keyframes proanimate {
-            from { width: 0%; }
+        .icon-container {
+            margin-bottom: 30px;
+            animation: flicker 4s infinite;
         }
 
-        @media screen and (max-width:600px) {
-            img {
-                width: 60%;
+        /* WiFi Off Icon */
+        .wifi-icon {
+            width: 80px;
+            height: 80px;
+            fill: var(--secondary-text);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            line-height: 1.2;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .highlight {
+            color: var(--accent-color);
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 2px;
+        }
+
+        p {
+            font-size: 1.2rem;
+            color: var(--secondary-text);
+            max-width: 600px;
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
+
+        /* Button Style (Optional) */
+        .status-badge {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #333;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
             }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes flicker {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.8;
+            }
+
+            52% {
+                opacity: 0.4;
+            }
+
+            54% {
+                opacity: 0.9;
+            }
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
             h1 {
-                font-size: 1.3em;
+                font-size: 1.8rem;
             }
-            h2 {
-                margin: 1.1em;
-                font-size: 1.1em;
+
+            p {
+                font-size: 1rem;
+                padding: 0 10px;
             }
-            #progress {
-                width: 80%; /* Bar width */
+
+            .wifi-icon {
+                width: 60px;
+                height: 60px;
             }
         }
     </style>
-    <title>Coming Soon</title>
 </head>
+
 <body>
-    <div id="main">
-<!--         <img src="logo.png" alt="Logo Image"> -->
-        
-        <h1>Ravand AI</h1> 
-        <h2>Our website is currently under construction. </h2>
-        <div id="progress"><div id="fill"><div id="barpercent"><h3>35%</h3></div></div></div>
+
+    <!-- Background Static Effect -->
+    <div class="noise"></div>
+
+    <div class="container">
+        <!-- Icon -->
+        <div class="icon-container">
+            <svg class="wifi-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path
+                    d="M12 18c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm0-6c3.31 0 6 2.69 6 6h-2c0-2.21-1.79-4-4-4s-4 1.79-4 4H6c0-3.31 2.69-6 6-6zm0-6c5.52 0 10 4.48 10 10h-2c0-4.42-3.58-8-8-8s-8 3.58-8 8H2c0-5.52 4.48-10 10-10z" />
+                <!-- Strikethrough line -->
+                <line x1="2" y1="22" x2="22" y2="2" stroke="#ff2b2b" stroke-width="2" stroke-linecap="round" />
+            </svg>
+        </div>
+
+        <!-- Main Message -->
+        <h1>Due to <span class="highlight">Iran Internet Blackout</span> we are shutting down</h1>
+
+        <!-- Subtext -->
+        <p>
+            We can no longer maintain our services reliably due to severe connectivity restrictions.
+            We stand in solidarity with the people affected. Stay safe.
+        </p>
+
+        <!-- Status Badge -->
+        <div class="status-badge">
+            Connection Terminated
+        </div>
     </div>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+
 </body>
+
 </html>
