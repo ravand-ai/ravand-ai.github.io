@@ -8,6 +8,14 @@ const CANVAS_ID = "hero-canvas";
 const INK = 0xf2f6f8;
 const LINE_RGB = [0.12, 0.52, 0.62];
 const TIME_SCALE = 0.85;
+const GLASS_SELECTORS = [
+  "#solutions",
+  "#markets",
+  "#approach",
+  "#pipeline",
+  "#contact",
+  "footer",
+];
 
 let active = null;
 
@@ -35,7 +43,9 @@ class FlowMesh3D {
     this.mobile = false;
     this.reducedMotion = prefersReducedMotion();
     this._onResize = () => this._resize();
-    this._onScroll = () => this._updateScrollFade();
+    this._onScroll = () => this._updateScrollState();
+    this._glassBlend = 0;
+    this._scrollDrift = 0;
     this._onContextLost = (event) => {
       event.preventDefault();
       this.pause();
@@ -70,7 +80,7 @@ class FlowMesh3D {
 
     this._buildSurface();
     this._resize();
-    this._updateScrollFade();
+    this._updateScrollState();
 
     window.addEventListener("resize", this._onResize, { passive: true });
     window.addEventListener("scroll", this._onScroll, { passive: true });
@@ -244,18 +254,49 @@ class FlowMesh3D {
     this.renderer.setSize(width, height, false);
   }
 
-  _updateScrollFade() {
-    const wrap = document.querySelector(".scene-wrap");
-    if (!wrap) return;
+  _glassSectionBlend() {
+    const vh = window.innerHeight;
+    let blend = 0;
 
+    for (const selector of GLASS_SELECTORS) {
+      const el = document.querySelector(selector);
+      if (!el) continue;
+
+      const rect = el.getBoundingClientRect();
+      const visible = Math.min(rect.bottom, vh) - Math.max(rect.top, 0);
+      if (visible <= 0) continue;
+
+      const coverage = visible / Math.min(rect.height, vh);
+      blend = Math.max(blend, coverage);
+    }
+
+    return blend;
+  }
+
+  _updateScrollState() {
     const scrollY = window.scrollY;
-    const fadeEnd = window.innerHeight * 1.4;
-    const opacity = Math.max(0, 1 - scrollY / fadeEnd);
-    wrap.style.opacity = String(opacity);
+    const vh = window.innerHeight;
+    this._scrollDrift = Math.min(scrollY / (vh * 3.2), 1);
+  }
+
+  _applySceneLayout() {
+    const drift = this._scrollDrift ?? 0;
+    const glass = this._glassBlend ?? 0;
+
+    this.group.position.y = -1.55 - drift * 1.85 + glass * 0.35;
+
+    this.lines.material.opacity = 0.45 + drift * 0.06 + glass * 0.3;
+
+    this.scene.fog.near = 22 - glass * 4;
+    this.scene.fog.far = 52 + glass * 8;
   }
 
   renderFrame(time) {
     const t = time ?? this.clock.getElapsedTime() * TIME_SCALE;
+    const glassTarget = this._glassSectionBlend();
+    this._glassBlend += (glassTarget - this._glassBlend) * 0.1;
+    this._applySceneLayout();
+
     this._updateMesh(t);
     this.group.rotation.y = Math.sin(t * 0.18) * 0.1;
     this.group.rotation.z = Math.sin(t * 0.11) * 0.018;

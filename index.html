@@ -70,11 +70,14 @@
         .scene-wrap { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
         .scene-canvas { width: 100%; height: 100%; display: block; opacity: 0.55; }
         .scene-shade {
-            position: absolute; inset: 0;
+            position: absolute; left: 0; right: 0; top: 0;
+            height: 100vh;
+            height: 100dvh;
             background: linear-gradient(180deg,
                 rgba(244, 247, 249, 0.55) 0%,
                 rgba(244, 247, 249, 0.82) 45%,
                 rgba(244, 247, 249, 0.96) 100%);
+            pointer-events: none;
         }
         .scene-wrap.no-webgl { background: var(--bg); }
         .scene-wrap.no-webgl .scene-canvas { display: none; }
@@ -258,8 +261,22 @@
         /* Sections */
         section:not(.hero) { padding: 6.5rem 0; position: relative; }
         section.hero { position: relative; }
-        .section-dark { background: var(--surface); }
-        .section-raised { background: var(--bg-alt); }
+        .section-dark {
+            background: rgba(255, 255, 255, 0.62);
+            backdrop-filter: blur(20px) saturate(1.65);
+            -webkit-backdrop-filter: blur(20px) saturate(1.65);
+            border-top: 1px solid rgba(255, 255, 255, 0.65);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.35);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+        }
+        .section-raised {
+            background: rgba(234, 240, 244, 0.03);
+            backdrop-filter: blur(8px) saturate(1.4);
+            -webkit-backdrop-filter: blur(8px) saturate(1.4);
+            border-top: 1px solid rgba(255, 255, 255, 0.5);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.28);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+        }
 
         .section-head { margin-bottom: 3.5rem; }
         .section-head.center { text-align: center; }
@@ -419,9 +436,12 @@
 
         /* Footer */
         footer {
-            border-top: 1px solid var(--border);
             padding: 2.5rem 0;
-            background: var(--bg-alt);
+            background: rgba(234, 240, 244, 0.16);
+            backdrop-filter: blur(16px) saturate(1.6);
+            -webkit-backdrop-filter: blur(16px) saturate(1.6);
+            border-top: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
         }
         .footer-inner {
             display: flex; justify-content: space-between;
