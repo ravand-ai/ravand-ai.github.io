@@ -4,184 +4,742 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Service Shutdown</title>
+    <meta name="description"
+        content="Ravand AI builds custom LocalAI, agentic AI, and MLOps solutions for privacy-first, bioinformatics, accessibility, and IoT markets.">
+    <meta name="theme-color" content="#f4f7f9">
+    <link rel="icon" href="favicon.png" type="image/png">
+    <title>Ravand AI | Custom AI & Agentic Solutions</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;1,14..32,700&display=swap"
+        rel="stylesheet">
     <style>
         :root {
-            --bg-color: #0a0a0a;
-            --text-color: #e0e0e0;
-            --accent-color: #ff2b2b;
-            --secondary-text: #888888;
+            --ink: #0c2230;
+            --text: #1a2b36;
+            --text-muted: #5c6f7c;
+            --text-light: #8a9aa6;
+            --bg: #f4f7f9;
+            --bg-alt: #eaf0f4;
+            --surface: #ffffff;
+            --border: #e2eaef;
+            --border-soft: #edf2f5;
+            --accent: #0d8fa8;
+            --accent-deep: #086b82;
+            --accent-soft: #e4f3f6;
+            --max: 1120px;
+            --nav-h: 72px;
+            --r: 24px;
+            --r-sm: 16px;
+            --shadow-sm: 0 1px 2px rgba(12, 34, 48, 0.04);
+            --shadow-md: 0 8px 32px rgba(12, 34, 48, 0.06);
         }
 
-        body,
-        html {
+        *, *::before, *::after { box-sizing: border-box; }
+        html { scroll-behavior: smooth; overflow-x: clip; }
+
+        body {
             margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            overflow: hidden;
-            /* Prevents scrollbars */
+            font-family: "Inter", system-ui, -apple-system, sans-serif;
+            font-size: 1rem;
+            line-height: 1.65;
+            color: var(--text);
+            background: var(--bg);
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* Background animation to simulate signal loss/static */
-        .noise {
+        a { color: inherit; text-decoration: none; }
+        .nav-links a:hover, .footer-links a:hover { color: var(--accent); }
+
+        :focus { outline: none; }
+        :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+        .skip-link {
+            position: absolute; top: -100px; left: 1rem; z-index: 300;
+            padding: 0.75rem 1.25rem; background: var(--surface); color: var(--ink);
+            font-weight: 600; border-radius: var(--r-sm);
+        }
+        .skip-link:focus { top: 1rem; }
+
+        .container { max-width: var(--max); margin: 0 auto; padding: 0 2rem; }
+
+        strong, .emph { font-weight: 700; font-style: italic; }
+
+        /* Canvas */
+        .scene-wrap { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+        .scene-canvas { width: 100%; height: 100%; display: block; opacity: 0.55; }
+        .scene-shade {
+            position: absolute; inset: 0;
+            background: linear-gradient(180deg,
+                rgba(244, 247, 249, 0.55) 0%,
+                rgba(244, 247, 249, 0.82) 45%,
+                rgba(244, 247, 249, 0.96) 100%);
+        }
+        .scene-wrap.no-webgl { background: var(--bg); }
+        .scene-wrap.no-webgl .scene-canvas { display: none; }
+        main { position: relative; z-index: 1; }
+
+        /* Nav */
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            height: var(--nav-h);
+            background: rgba(255, 255, 255, 0.38);
+            backdrop-filter: blur(18px) saturate(1.8);
+            -webkit-backdrop-filter: blur(18px) saturate(1.8);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.45);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.55),
+                0 4px 20px rgba(12, 34, 48, 0.04);
+        }
+        .nav-inner {
+            max-width: var(--max);
+            margin: 0 auto;
+            height: 100%;
+            padding: 0 2rem;
+            display: flex; align-items: center;
+            justify-content: space-between; gap: 1rem;
+        }
+        .logo { display: flex; align-items: center; gap: 0.875rem; flex-shrink: 0; }
+
+        .logo-tile {
+            width: 3rem; height: 3rem;
+            display: grid; place-items: center; flex-shrink: 0;
+        }
+        .logo-tile img { width: 3rem; height: 3rem; object-fit: contain; }
+
+        .logo-text {
+            font-size: 1.1875rem; font-weight: 700;
+            letter-spacing: -0.03em; color: var(--ink);
+            white-space: nowrap;
+        }
+        .logo-text em { font-style: normal; color: var(--accent); }
+
+        .nav-links { display: flex; gap: 2rem; list-style: none; margin: 0; padding: 0; }
+        .nav-links a {
+            color: var(--text-muted); font-weight: 500; font-size: 1rem;
+            min-height: 44px; display: inline-flex; align-items: center;
+            transition: color 0.2s ease;
+        }
+
+        .nav-actions { display: flex; gap: 0.5rem; align-items: center; }
+        .icon-link {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 40px; height: 40px;
+            color: var(--ink);
+            border-radius: 999px;
+            background: transparent;
+            border: none;
+            transition: color 0.25s ease, background 0.25s ease, transform 0.25s ease;
+        }
+        .icon-link:hover {
+            color: var(--accent-deep);
+            background: rgba(255, 255, 255, 0.35);
+            transform: scale(1.05);
+        }
+        .icon-link svg { display: block; }
+        .menu-btn {
+            display: none; width: 40px; height: 40px;
+            border: none; border-radius: 999px;
+            background: transparent; color: var(--ink); cursor: pointer;
+            transition: background 0.25s ease;
+        }
+        .menu-btn:hover { background: rgba(255, 255, 255, 0.35); }
+        .mobile-nav {
+            display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1;
-            opacity: 0.05;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            top: var(--nav-h);
+            left: 0; right: 0;
+            background: rgba(255, 255, 255, 0.42);
+            backdrop-filter: blur(18px) saturate(1.8);
+            -webkit-backdrop-filter: blur(18px) saturate(1.8);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+            padding: 1rem 1.25rem; z-index: 99;
         }
+        .mobile-nav.open { display: block; }
+        .mobile-nav ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.25rem; }
+        .mobile-nav a { font-size: 1rem; color: var(--text-muted); min-height: 44px; display: flex; align-items: center; }
 
-        .container {
-            position: relative;
-            z-index: 2;
+        /* Buttons */
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-height: 44px; padding: 0.625rem 1.5rem;
+            border-radius: var(--r-sm); font-weight: 600; font-size: 0.9375rem;
+            border: 1px solid transparent; cursor: pointer;
+            transition: background 0.2s, border-color 0.2s, color 0.2s;
+        }
+        .btn-primary {
+            background: var(--ink);
+            color: #fff;
+        }
+        .btn-primary:hover { background: #152d3d; }
+        .btn-outline {
+            background: var(--surface);
+            color: var(--text);
+            border-color: var(--border);
+        }
+        .btn-outline:hover { border-color: var(--accent); color: var(--accent-deep); }
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-muted);
+            border-color: var(--border);
+        }
+        .btn-ghost:hover { color: var(--text); border-color: #c8d5de; }
+        .btn-lg { padding: 0.75rem 1.75rem; font-size: 1rem; }
+
+
+        /* Hero */
+        .hero {
+            min-height: 100vh;
+            min-height: 100dvh;
             display: flex;
-            flex-direction: column;
-            justify-content: center;
             align-items: center;
-            height: 100vh;
-            padding: 20px;
+            padding: var(--nav-h) 0 1.5rem;
+            position: relative;
+        }
+        .hero > .container { width: 100%; }
+        .hero-grid {
+            display: grid; grid-template-columns: 0.9fr 1.1fr;
+            gap: clamp(2rem, 4vw, 4rem); align-items: center;
+        }
+        .hero-visual {
+            display: flex; flex-direction: column; align-items: center;
             text-align: center;
-            animation: fadeIn 2s ease-in-out;
+        }
+        .hero-logo-tile {
+            width: clamp(7rem, 14vw, 10rem);
+            height: clamp(7rem, 14vw, 10rem);
+            display: grid; place-items: center;
+            margin-bottom: clamp(0.75rem, 2vh, 1.5rem);
+        }
+        .hero-logo-tile img { width: 100%; height: 100%; object-fit: contain; }
+
+        .hero-wordmark {
+            margin: 0; font-size: clamp(1.75rem, 3.5vw, 2.375rem);
+            font-weight: 700; letter-spacing: -0.04em; color: var(--ink);
+        }
+        .hero-wordmark em { font-style: normal; color: var(--accent); }
+        .hero-tagline {
+            margin: 0.375rem 0 0; font-size: 0.9375rem;
+            color: var(--text-muted); font-weight: 400;
         }
 
-        .icon-container {
-            margin-bottom: 30px;
-            animation: flicker 4s infinite;
+        .hero-copy .eyebrow {
+            font-size: 0.75rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.14em;
+            color: var(--text-light); margin-bottom: clamp(0.75rem, 2vh, 1.25rem);
+        }
+        .hero-copy h1 {
+            font-size: clamp(2rem, 3.8vw, 3rem);
+            font-weight: 700; line-height: 1.12;
+            letter-spacing: -0.035em; margin: 0 0 clamp(0.875rem, 2vh, 1.25rem);
+            color: var(--ink);
+        }
+        .hero-copy p {
+            font-size: clamp(1rem, 1.4vw, 1.125rem); line-height: 1.65;
+            color: var(--text-muted); margin: 0 0 clamp(1.25rem, 2.5vh, 1.75rem);
+            max-width: 34rem;
+        }
+        .hero-actions {
+            display: flex; flex-wrap: wrap; gap: 0.625rem;
+            margin-bottom: clamp(0.875rem, 2vh, 1.5rem);
+        }
+        .hero-pills { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .pill {
+            padding: 0.375rem 0.875rem;
+            font-size: 0.8125rem; font-weight: 500;
+            color: var(--text-muted);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 999px;
         }
 
-        /* WiFi Off Icon */
-        .wifi-icon {
-            width: 80px;
-            height: 80px;
-            fill: var(--secondary-text);
+        /* Sections */
+        section:not(.hero) { padding: 6.5rem 0; position: relative; }
+        section.hero { position: relative; }
+        .section-dark { background: var(--surface); }
+        .section-raised { background: var(--bg-alt); }
+
+        .section-head { margin-bottom: 3.5rem; }
+        .section-head.center { text-align: center; }
+        .section-head.center p { margin-left: auto; margin-right: auto; }
+
+        .label {
+            display: block;
+            font-size: 0.75rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.14em;
+            color: var(--text-light); margin-bottom: 1.25rem;
+        }
+        .section-head h2 {
+            font-size: clamp(1.875rem, 3.2vw, 2.5rem);
+            font-weight: 700; letter-spacing: -0.03em;
+            margin: 0 0 1.25rem; line-height: 1.2;
+            color: var(--ink);
+        }
+        .section-head p, .section-lead {
+            font-size: 1.0625rem; color: var(--text-muted);
+            max-width: 36rem; margin: 0; line-height: 1.7;
         }
 
-        h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 20px;
-            line-height: 1.2;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+        /* Cards */
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 2rem;
+            box-shadow: var(--shadow-sm);
+            transition:
+                border-color 0.3s ease,
+                box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .card:hover {
+            border-color: #cddbe3;
+            box-shadow: var(--shadow-md);
+            transform: translateY(-3px);
         }
 
-        .highlight {
-            color: var(--accent-color);
-            border-bottom: 2px solid var(--accent-color);
-            padding-bottom: 2px;
+        .card-icon {
+            width: 2.75rem; height: 2.75rem; border-radius: 12px;
+            display: grid; place-items: center; margin-bottom: 1.5rem;
+            background: var(--accent-soft);
+            color: var(--accent-deep);
+        }
+        .card h3 { font-size: 1.125rem; font-weight: 600; margin: 0 0 0.625rem; color: var(--ink); }
+        .card p { font-size: 0.9375rem; color: var(--text-muted); margin: 0; line-height: 1.65; }
+
+        .market-card { display: flex; gap: 1.25rem; align-items: flex-start; }
+        .market-icon {
+            width: 2.75rem; height: 2.75rem;
+            display: grid; place-items: center;
+            background: var(--accent-soft);
+            color: var(--accent-deep);
+            border-radius: 12px; flex-shrink: 0;
         }
 
-        p {
-            font-size: 1.2rem;
-            color: var(--secondary-text);
-            max-width: 600px;
-            line-height: 1.6;
-            margin-bottom: 40px;
+        /* Approach */
+        .split {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: clamp(2.5rem, 5vw, 4rem);
+            align-items: center;
+        }
+        .approach-copy { max-width: 28rem; }
+        .approach-copy h2 {
+            font-size: clamp(1.875rem, 3.2vw, 2.5rem);
+            font-weight: 700; letter-spacing: -0.03em;
+            margin: 0 0 1.25rem; line-height: 1.2;
+            color: var(--ink);
+        }
+        .stack {
+            display: flex; flex-direction: column; gap: 0.5rem;
+            width: 100%;
+        }
+        .stack-item {
+            display: grid;
+            grid-template-columns: 5.5rem minmax(0, 1fr) minmax(0, auto);
+            align-items: center;
+            column-gap: 1rem;
+            padding: 1rem 1.25rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--r-sm);
+            transition: border-color 0.2s;
+        }
+        .stack-item:hover { border-color: #cddbe3; }
+        .stack-item .tag {
+            font-size: 0.6875rem; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.1em; color: var(--accent);
+        }
+        .stack-item strong {
+            font-size: 0.9375rem; font-weight: 600; color: var(--ink);
+            line-height: 1.4;
+        }
+        .stack-item .stack-detail {
+            font-size: 0.8125rem; color: var(--text-light);
+            text-align: right; white-space: nowrap;
         }
 
-        /* Button Style (Optional) */
-        .status-badge {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid #333;
-            padding: 10px 20px;
-            border-radius: 50px;
-            font-size: 0.9rem;
-            color: #aaa;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+        /* Pipeline */
+        .pipeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+        .step {
+            text-align: left; padding: 1.75rem 1.5rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            box-shadow: var(--shadow-sm);
+            transition:
+                border-color 0.3s ease,
+                box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .step:hover {
+            border-color: #cddbe3;
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+        .step-num {
+            font-size: 0.75rem; font-weight: 600;
+            letter-spacing: 0.08em; color: var(--accent);
+            margin-bottom: 1rem;
+        }
+        .step h4 { font-size: 1rem; font-weight: 600; margin: 0 0 0.5rem; color: var(--ink); }
+        .step p { font-size: 0.875rem; color: var(--text-muted); margin: 0; line-height: 1.6; }
+
+        .pipeline-tags {
+            display: flex; justify-content: center; flex-wrap: wrap;
+            gap: 2rem; margin-top: 3rem; padding-top: 2.5rem;
+            border-top: 1px solid var(--border);
+        }
+        .pipeline-tags span {
+            display: flex; align-items: center; gap: 0.5rem;
+            font-size: 0.9375rem; color: var(--text-muted);
+        }
+        .pipeline-tags svg { color: var(--accent); flex-shrink: 0; }
+
+        /* CTA */
+        .cta {
+            text-align: center;
+            max-width: 40rem;
+            margin: 0 auto;
+        }
+        .cta h2 {
+            font-size: clamp(1.875rem, 3.2vw, 2.5rem);
+            font-weight: 700; margin: 0 0 1rem; letter-spacing: -0.03em;
+            color: var(--ink);
+        }
+        .cta p {
+            font-size: 1.0625rem; color: var(--text-muted);
+            max-width: 32rem; margin: 0 auto 2rem;
+        }
+        .cta-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 0.75rem; }
+
+        /* Footer */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 2.5rem 0;
+            background: var(--bg-alt);
+        }
+        .footer-inner {
+            display: flex; justify-content: space-between;
+            align-items: center; flex-wrap: wrap; gap: 1rem;
+        }
+        .footer-inner p { margin: 0; font-size: 0.875rem; color: var(--text-light); }
+        .footer-links { display: flex; gap: 1.5rem; list-style: none; margin: 0; padding: 0; }
+        .footer-links a {
+            font-size: 0.875rem; color: var(--text-muted);
+            min-height: 44px; display: inline-flex; align-items: center;
+            transition: color 0.2s;
         }
 
-        /* Animations */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
+        @media (max-width: 900px) {
+            .hero-grid, .split { grid-template-columns: 1fr; gap: 1.5rem; }
+            .split { align-items: start; }
+            .approach-copy { max-width: none; }
+            .hero-visual { order: -1; }
+            .hero-logo-tile {
+                width: clamp(5.5rem, 20vw, 7.5rem);
+                height: clamp(5.5rem, 20vw, 7.5rem);
+                margin-bottom: 0.5rem;
             }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            .hero-wordmark { font-size: clamp(1.5rem, 5.5vw, 2rem); }
+            .hero-copy h1 { font-size: clamp(1.75rem, 6.5vw, 2.375rem); }
+            .hero-copy p { font-size: 0.9375rem; line-height: 1.6; margin-bottom: 1rem; }
+            .hero-actions { margin-bottom: 0.75rem; }
+            .grid-3 { grid-template-columns: repeat(2, 1fr); }
+            .pipeline { grid-template-columns: repeat(2, 1fr); }
         }
-
-        @keyframes flicker {
-
-            0%,
-            100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.8;
-            }
-
-            52% {
-                opacity: 0.4;
-            }
-
-            54% {
-                opacity: 0.9;
-            }
-        }
-
-        /* Mobile Responsiveness */
         @media (max-width: 768px) {
-            h1 {
-                font-size: 1.8rem;
+            .nav-links, .nav-actions { display: none; }
+            .menu-btn { display: grid; place-items: center; }
+            .nav-inner { padding: 0 1.25rem; }
+            .grid-3, .grid-2, .pipeline { grid-template-columns: 1fr; }
+            .stack-item { grid-template-columns: 5rem 1fr; }
+            .stack-item .stack-detail { display: none; }
+            section:not(.hero) { padding: 4.5rem 0; }
+            .container { padding: 0 1.25rem; }
+        }
+        @media (max-height: 760px) and (min-width: 901px) {
+            .hero-logo-tile {
+                width: clamp(5.5rem, 12vw, 8rem);
+                height: clamp(5.5rem, 12vw, 8rem);
             }
+            .hero-copy h1 { font-size: clamp(1.75rem, 3.2vw, 2.5rem); }
+            .hero-copy p { margin-bottom: 1rem; }
+            .hero-actions { margin-bottom: 0.75rem; }
+        }
+        @media (max-width: 900px) and (max-height: 820px) {
+            .hero-tagline, .hero-pills { display: none; }
+            .hero-copy .eyebrow { margin-bottom: 0.5rem; }
+            .btn-lg { padding: 0.625rem 1.25rem; font-size: 0.9375rem; }
+        }
+        /* Scroll reveal */
+        .reveal {
+            opacity: 0;
+            transform: translateY(32px);
+            transition:
+                opacity 0.75s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+            transition-delay: var(--reveal-delay, 0s);
+            will-change: opacity, transform;
+        }
+        .reveal.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
 
-            p {
-                font-size: 1rem;
-                padding: 0 10px;
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            .nav-links a { transition: none; }
+            .reveal {
+                opacity: 1;
+                transform: none;
+                transition: none;
+                will-change: auto;
             }
-
-            .wifi-icon {
-                width: 60px;
-                height: 60px;
-            }
+            .card:hover, .step:hover { transform: none; }
         }
     </style>
 </head>
 
 <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
 
-    <!-- Background Static Effect -->
-    <div class="noise"></div>
-
-    <div class="container">
-        <!-- Icon -->
-        <div class="icon-container">
-            <svg class="wifi-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <path
-                    d="M12 18c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm0-6c3.31 0 6 2.69 6 6h-2c0-2.21-1.79-4-4-4s-4 1.79-4 4H6c0-3.31 2.69-6 6-6zm0-6c5.52 0 10 4.48 10 10h-2c0-4.42-3.58-8-8-8s-8 3.58-8 8H2c0-5.52 4.48-10 10-10z" />
-                <!-- Strikethrough line -->
-                <line x1="2" y1="22" x2="22" y2="2" stroke="#ff2b2b" stroke-width="2" stroke-linecap="round" />
-            </svg>
-        </div>
-
-        <!-- Main Message -->
-        <h1>Due to <span class="highlight">Iran Internet Blackout</span> we are shutting down</h1>
-
-        <!-- Subtext -->
-        <p>
-            We can no longer maintain our services reliably due to severe connectivity restrictions.
-            We stand in solidarity with the people affected. Stay safe.
-        </p>
-
-        <!-- Status Badge -->
-        <div class="status-badge">
-            Connection Terminated
-        </div>
+    <div class="scene-wrap" aria-hidden="true">
+        <canvas id="hero-canvas" class="scene-canvas"></canvas>
+        <div class="scene-shade"></div>
     </div>
 
+    <nav aria-label="Primary">
+            <div class="nav-inner">
+                <a href="#" class="logo" aria-label="Ravand AI home">
+                    <span class="logo-tile"><img src="logo.png" alt=""></span>
+                    <span class="logo-text">Ravand<em>AI</em></span>
+                </a>
+                <ul class="nav-links">
+                    <li><a href="#solutions">Solutions</a></li>
+                    <li><a href="#markets">Markets</a></li>
+                    <li><a href="#approach">Approach</a></li>
+                    <li><a href="#pipeline">MLOps</a></li>
+                </ul>
+                <div class="nav-actions">
+                    <a href="https://github.com/ravand-ai" class="icon-link" target="_blank" rel="noopener" aria-label="GitHub">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.11.82-.26.82-.58 0-.29-.01-1.05-.02-2.06-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.35-1.76-1.35-1.76-1.1-.75.08-.74.08-.74 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.49.99.11-.77.42-1.31.76-1.61-2.66-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.17 0 0 1.01-.32 3.3 1.23.96-.27 1.98-.4 3-.4 1.02 0 2.05.13 3 .4 2.29-1.55 3.3-1.23 3.3-1.23.66 1.65.25 2.87.12 3.17.77.84 1.24 1.91 1.24 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.82 1.1.82 2.22v3.29c0 .32.19.69.8.57C20.56 21.8 24 17.3 24 12 24 5.37 18.63 0 12 0z"/>
+                        </svg>
+                    </a>
+                    <a href="#contact" class="btn btn-primary">Contact</a>
+                </div>
+                <button class="menu-btn" type="button" aria-label="Menu" aria-expanded="false"
+                    aria-controls="mobileNav" onclick="toggleMenu()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" />
+                        <line x1="3" y1="18" x2="21" y2="18" />
+                    </svg>
+                </button>
+            </div>
+    </nav>
+
+    <div class="mobile-nav" id="mobileNav">
+        <ul>
+            <li><a href="#solutions" onclick="toggleMenu()">Solutions</a></li>
+            <li><a href="#markets" onclick="toggleMenu()">Markets</a></li>
+            <li><a href="#approach" onclick="toggleMenu()">Approach</a></li>
+            <li><a href="#pipeline" onclick="toggleMenu()">MLOps</a></li>
+            <li><a href="#contact" onclick="toggleMenu()">Contact</a></li>
+        </ul>
+    </div>
+
+    <main id="main-content">
+        <!-- Hero -->
+        <section class="hero">
+            <div class="container">
+                <div class="hero-grid">
+                    <div class="hero-visual">
+                        <div class="hero-logo-tile">
+                            <img src="logo.png" alt="">
+                        </div>
+                        <p class="hero-wordmark">Ravand<em>AI</em></p>
+                        <p class="hero-tagline">Flowing Intelligence to Every Human</p>
+                    </div>
+                    <div class="hero-copy">
+                        <div class="eyebrow">Custom AI · Local-First · Full Control</div>
+                        <h1>Agentic AI built for <strong>your world</strong></h1>
+                        <p>End-to-end custom solutions: LocalAI, LLM agents, vision and audio systems, trained,
+                            validated, and deployed through automated MLOps pipelines you fully own.</p>
+                        <div class="hero-actions">
+                            <a href="#contact" class="btn btn-primary btn-lg">Start a Project</a>
+                            <a href="#solutions" class="btn btn-outline btn-lg">Our Solutions</a>
+                        </div>
+                        <div class="hero-pills">
+                            <span class="pill">LocalAI</span>
+                            <span class="pill">MLOps</span>
+                            <span class="pill">LLM · Vision · Audio</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Solutions -->
+        <section id="solutions" class="section-dark">
+            <div class="container">
+                <div class="section-head center">
+                    <div class="label">What We Build</div>
+                    <h2>Custom AI solutions, <strong>end to end</strong></h2>
+                    <p>From proven methods to the latest AI, ready-to-use systems you deploy, operate, and own yourself.</p>
+                </div>
+                <div class="grid-3">
+                    <div class="card">
+                        <div class="card-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+                        <h3>Agentic AI & LLMs</h3>
+                        <p>AI assistants that plan, reason, and get things done, answering questions, working with your documents, and running in the cloud or on your own servers.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div>
+                        <h3>Vision AI</h3>
+                        <p>Systems that read documents, analyze images and video, and spot what matters in the office, in the field, or on a device with no internet.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></div>
+                        <h3>Audio Agents</h3>
+                        <p>Voice experiences that listen, speak, and hold natural conversations, from customer support to hands-free tools anyone can use.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+                        <h3>Hosting & Infrastructure</h3>
+                        <p>We set up and run your AI where you need it, in the cloud for flexibility or on your own hardware when you need full control.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></div>
+                        <h3>IoT & Edge AI</h3>
+                        <p>Smart AI built into devices and sensors, fast, reliable, and able to work even when the connection drops.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+                        <h3>Privacy-First AI</h3>
+                        <p>Your data stays in your environment. We build AI you can trust, verify, and fully own.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Markets -->
+        <section id="markets" class="section-raised">
+            <div class="container">
+                <div class="section-head">
+                    <div class="label">Niche Expertise</div>
+                    <h2>AI built for <strong>markets that matter</strong></h2>
+                    <p>Domains where off-the-shelf solutions fall short: thoughtful, human-centered AI for real-world needs.</p>
+                </div>
+                <div class="grid-2">
+                    <div class="card market-card">
+                        <div class="market-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg></div>
+                        <div><h3>Bioinformatics</h3><p>Genomic analysis, protein structure prediction, and scientific pipelines on domain-specific data.</p></div>
+                    </div>
+                    <div class="card market-card">
+                        <div class="market-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+                        <div><h3>Privacy-First</h3><p>Local-first for healthcare, finance, and government. Data sovereignty is non-negotiable.</p></div>
+                    </div>
+                    <div class="card market-card">
+                        <div class="market-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="4" r="2"/><path d="M15 8a5 5 0 0 0-6 0v2h6V8z"/><path d="M8 14v6M16 14v6M6 20h12"/></svg></div>
+                        <div><h3>Accessibility</h3><p>AI for children, elderly, and people with disabilities, with voice-first and adaptive experiences.</p></div>
+                    </div>
+                    <div class="card market-card">
+                        <div class="market-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1"/></svg></div>
+                        <div><h3>IoT & Industry</h3><p>Embedded intelligence for manufacturing, agriculture, and smart cities, from sensor to insight.</p></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Approach -->
+        <section id="approach" class="section-dark">
+            <div class="container">
+                <div class="split">
+                    <div class="approach-copy">
+                        <div class="label">Our Approach</div>
+                        <h2>Classical ML meets <strong>modern transformers</strong></h2>
+                        <p class="section-lead">We bridge proven statistical methods with cutting-edge LLM and vision transformer stacks, the right tool for every layer.</p>
+                    </div>
+                    <div class="stack">
+                        <div class="stack-item"><span class="tag">Deploy</span><strong>Production Serving</strong><span class="stack-detail">Docker · K8s · Edge</span></div>
+                        <div class="stack-item"><span class="tag">Models</span><strong>LLMs · ViT · Audio</strong><span class="stack-detail">Transformers · CNNs</span></div>
+                        <div class="stack-item"><span class="tag">Train</span><strong>Fine-tuning & RLHF</strong><span class="stack-detail">Custom datasets</span></div>
+                        <div class="stack-item"><span class="tag">Data</span><strong>Pipelines & Validation</strong><span class="stack-detail">Quality gates</span></div>
+                        <div class="stack-item"><span class="tag">Infra</span><strong>GPU · CPU · Quantized</strong><span class="stack-detail">ravand-container</span></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MLOps -->
+        <section id="pipeline" class="section-raised">
+            <div class="container">
+                <div class="section-head center">
+                    <div class="label">MLOps</div>
+                    <h2>Fully automated, <strong>fully yours</strong></h2>
+                    <p>From raw data to production inference, every step automated, every deployment under your control.</p>
+                </div>
+                <div class="pipeline">
+                    <div class="step"><div class="step-num">01</div><h4>Ingest & Prepare</h4><p>Collection, cleaning, labeling, and versioning.</p></div>
+                    <div class="step"><div class="step-num">02</div><h4>Train & Validate</h4><p>Training, tuning, cross-validation, benchmarks.</p></div>
+                    <div class="step"><div class="step-num">03</div><h4>Package & Optimize</h4><p>Quantization, pruning, containerization.</p></div>
+                    <div class="step"><div class="step-num">04</div><h4>Deploy & Monitor</h4><p>CI/CD rollout with observability and drift detection.</p></div>
+                </div>
+                <div class="pipeline-tags">
+                    <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>End-to-end automation</span>
+                    <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Full ownership</span>
+                    <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>On-prem or on-demand</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact -->
+        <section id="contact" class="section-dark">
+            <div class="container">
+                <div class="cta">
+                    <h2>Ready to build something <strong>custom</strong>?</h2>
+                    <p>Local LLM agents, bioinformatics pipelines, accessibility-focused voice interfaces. Let's talk.</p>
+                    <div class="cta-actions">
+                        <a href="mailto:contact@ravandai.com" class="btn btn-primary btn-lg">contact@ravandai.com</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer role="contentinfo">
+            <div class="container footer-inner">
+                <p>© 2026 Ravand AI</p>
+                <ul class="footer-links">
+                    <li><a href="mailto:contact@ravandai.com">Contact</a></li>
+                    <li><a href="https://github.com/ravand-ai" target="_blank" rel="noopener">GitHub</a></li>
+                    <li><a href="https://ravandai.com">ravandai.com</a></li>
+                </ul>
+            </div>
+        </footer>
+    </main>
+
+    <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js" } }</script>
+    <script type="module" src="hero-scene.mjs"></script>
+    <script type="module" src="reveal.mjs"></script>
+    <script>
+        function toggleMenu() {
+            const nav = document.getElementById('mobileNav');
+            const btn = document.querySelector('.menu-btn');
+            const open = nav.classList.toggle('open');
+            btn.setAttribute('aria-expanded', open);
+        }
+        document.querySelectorAll('a[href^="#"]').forEach(a => {
+            a.addEventListener('click', e => {
+                const t = document.querySelector(a.getAttribute('href'));
+                if (t) { e.preventDefault(); t.scrollIntoView({ behavior: 'smooth' }); }
+            });
+        });
+    </script>
 </body>
 
 </html>
